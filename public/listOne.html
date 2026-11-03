@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Individual Donor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+<div class="container nav-inner">
+<a class="brand" href="index.html">
+<span class="logo">♥</span>
+<span>Tharunya Blood Care
+<small>DONATE BLOOD, SAVE LIVES ❤️</small></span>
+</a>
+
+<nav class="nav-links">
+<a href="index.html">Home</a>
+<a href="index.html#about">About</a>
+<a href="insert.html">Register Donor</a>
+<a href="list.html">View Donors</a>
+<a href="index.html#contact">Contact</a>
+</nav>
+</div>
+</header>
+
+<section class="page-header">
+<div class="container">
+<h1>Find a Donor 🩸</h1>
+<p>Search using a donor's unique ID.</p>
+</div>
+</section>
+
+<main class="page-content">
+<div class="container">
+<div class="panel panel-narrow">
+
+<span class="eyebrow">DONOR LOOKUP</span>
+<h2>Donor Details</h2>
+
+<form id="searchForm">
+<div class="field">
+<label for="donor_id">Donor ID</label>
+<input id="donor_id" type="number" min="1"
+required placeholder="Enter Donor ID">
+</div>
+
+<div class="form-actions">
+<button type="submit" class="btn">Search Donor</button>
+<a href="list.html" class="btn btn-light">Back to Donors</a>
+</div>
+</form>
+
+<div id="message" class="message" role="status"></div>
+<div id="result"></div>
+
+</div>
+</div>
+</main>
+
+<footer class="footer">
+<div class="container">
+<strong>Blood Donor Management System ❤️</strong>
+<p>Donate Blood, Save Lives.</p>
+</div>
+</footer>
+
+<script>
+const form = document.getElementById("searchForm");
+const input = document.getElementById("donor_id");
+const message = document.getElementById("message");
+const result = document.getElementById("result");
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+async function findDonor(id) {
+    message.className = "message";
+    result.innerHTML = "";
+
+    try {
+        const response = await fetch(
+            "/api/donors/" + encodeURIComponent(id)
+        );
+
+        const donor = await response.json();
+
+        if (!response.ok) {
+            throw new Error(donor.error || "Donor not found.");
+        }
+
+        message.textContent = "Donor found successfully!";
+        message.className = "message show success";
+
+        result.innerHTML = `
+            <div class="details">
+
+                <div class="detail">
+                    <span>Donor ID</span>
+                    <strong>#${escapeHTML(donor.donor_id)}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Donor Name</span>
+                    <strong>${escapeHTML(donor.donor_name)}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Phone Number</span>
+                    <strong>${escapeHTML(donor.phone_number)}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Age</span>
+                    <strong>${escapeHTML(donor.age ?? "N/A")}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Blood Group 🩸</span>
+                    <strong>${escapeHTML(donor.blood_group ?? "N/A")}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Gender</span>
+                    <strong>${escapeHTML(donor.gender ?? "N/A")}</strong>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <a class="btn btn-light"
+                   href="update.html?id=${encodeURIComponent(donor.donor_id)}">
+                   Update
+                </a>
+
+                <a class="btn btn-danger"
+                   href="delete.html?id=${encodeURIComponent(donor.donor_id)}">
+                   Delete
+                </a>
+
+                <a class="btn btn-soft" href="list.html">
+                   View All Donors
+                </a>
+            </div>
+        `;
+
+    } catch (error) {
+        message.textContent =
+            error.message || "Unable to connect to the server.";
+        message.className = "message show error";
+    }
+}
+
+form.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const id = input.value.trim();
+
+    if (id) {
+        findDonor(id);
+    }
+});
+
+const id = new URLSearchParams(location.search).get("id");
+
+if (id && /^[1-9]\d*$/.test(id)) {
+    input.value = id;
+    findDonor(id);
+}
+</script>
+
+</body>
+</html>

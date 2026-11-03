@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Donors</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+<div class="container nav-inner">
+<a class="brand" href="index.html">
+<span class="logo">♥</span>
+<span>Tharunya Blood Care
+<small>DONATE BLOOD, SAVE LIVES ❤️</small></span>
+</a>
+<nav class="nav-links">
+<a href="index.html">Home</a>
+<a href="index.html#about">About</a>
+<a href="insert.html">Register Donor</a>
+<a href="list.html">View Donors</a>
+<a href="index.html#contact">Contact</a>
+</nav>
+</div>
+</header>
+
+<section class="page-header">
+<div class="container">
+<h1>Our Donor Community ❤️</h1>
+<p>View and manage registered donor information.</p>
+</div>
+</section>
+
+<main class="page-content">
+<div class="container">
+<div class="panel">
+
+<div class="toolbar">
+<div>
+<h2>Registered Donors</h2>
+<p>Donor records are fetched directly from MySQL.</p>
+</div>
+<span class="total-pill">
+Total: <span id="total">0</span>
+</span>
+</div>
+
+<div class="toolbar">
+<input id="search" class="search-input" type="search"
+placeholder="Search by Donor ID or name...">
+<a href="insert.html" class="btn">+ Register Donor</a>
+</div>
+
+<div id="message" class="message" role="status"></div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Donor ID</th>
+<th>Donor Name</th>
+<th>Phone Number</th>
+<th>Age</th>
+<th>Blood Group</th>
+<th>Gender</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="donorRows">
+<tr>
+<td colspan="7" class="empty">Loading donor records...</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+</main>
+
+<footer class="footer">
+<div class="container">
+<strong>Blood Donor Management System ❤️</strong>
+<p>Donate Blood, Save Lives.</p>
+</div>
+</footer>
+
+<script>
+const rows = document.getElementById("donorRows");
+const search = document.getElementById("search");
+const total = document.getElementById("total");
+const message = document.getElementById("message");
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+async function loadDonors() {
+    try {
+        const response = await fetch(
+            "/api/donors?search=" +
+            encodeURIComponent(search.value.trim())
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to load donors.");
+        }
+
+        const countResponse = await fetch("/api/donors/count");
+        const countData = await countResponse.json();
+
+        if (!countResponse.ok) {
+            throw new Error("Unable to load donor count.");
+        }
+
+        total.textContent = countData.total;
+        message.className = "message";
+
+        if (data.length === 0) {
+            rows.innerHTML = `
+                <tr>
+                    <td colspan="7" class="empty">
+                        No donors found. Register a donor to get started. 💗
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        rows.innerHTML = data.map(donor => `
+            <tr>
+                <td>#${escapeHTML(donor.donor_id)}</td>
+
+                <td>
+                    <strong>${escapeHTML(donor.donor_name)}</strong>
+                </td>
+
+                <td>${escapeHTML(donor.phone_number)}</td>
+
+                <td>${escapeHTML(donor.age ?? "N/A")}</td>
+
+                <td>
+                    <strong>${escapeHTML(donor.blood_group ?? "N/A")}</strong>
+                </td>
+
+                <td>${escapeHTML(donor.gender ?? "N/A")}</td>
+
+                <td>
+                    <div class="actions">
+                        <a class="btn btn-small btn-soft"
+                           href="listOne.html?id=${encodeURIComponent(donor.donor_id)}">
+                           View
+                        </a>
+
+                        <a class="btn btn-small btn-light"
+                           href="update.html?id=${encodeURIComponent(donor.donor_id)}">
+                           Update
+                        </a>
+
+                        <a class="btn btn-small btn-danger"
+                           href="delete.html?id=${encodeURIComponent(donor.donor_id)}">
+                           Delete
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        `).join("");
+
+    } catch (error) {
+        rows.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty">
+                    Could not load records. Check the server and database connection.
+                </td>
+            </tr>`;
+
+        message.textContent = error.message;
+        message.className = "message show error";
+    }
+}
+
+search.addEventListener("input", loadDonors);
+loadDonors();
+</script>
+
+</body>
+</html>

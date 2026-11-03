@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donor Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+<div class="container nav-inner">
+    <a class="brand" href="index.html">
+        <span class="logo">♥</span>
+        <span>Tharunya Blood Care
+        <small>DONATE BLOOD, SAVE LIVES ❤️</small></span>
+    </a>
+    <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="#about">About</a>
+        <a href="insert.html">Register Donor</a>
+        <a href="list.html">View Donors</a>
+        <a href="#contact">Contact</a>
+    </nav>
+</div>
+</header>
+
+<section class="hero">
+<div class="container hero-grid">
+    <div>
+        <span class="eyebrow">❤️ BE A HERO TODAY</span>
+        <h1>Donate Blood,<br><span>Save Lives.</span></h1>
+        <p>A single drop of blood can make a world of difference.
+        Become a donor and help make our community stronger.</p>
+
+        <div class="hero-actions">
+            <a href="insert.html" class="btn">♥ Register as a Donor</a>
+            <a href="list.html" class="btn btn-light">View Donors →</a>
+        </div>
+        <p><strong>Every donor matters. Every drop counts.</strong></p>
+    </div>
+
+    <div>
+        <img class="hero-image"
+        src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=1000&q=85"
+        alt="Blood donation and healthcare">
+    </div>
+</div>
+</section>
+
+<div class="container stats">
+    <div class="stat-card">
+        <span>🩸 Registered donors</span>
+        <strong id="donorCount">Loading...</strong>
+    </div>
+    <div class="stat-card">
+        <span>💗 Our mission</span>
+        <strong>Save Lives</strong>
+    </div>
+    <div class="stat-card">
+        <span>🤝 Our goal</span>
+        <strong>Help Others</strong>
+    </div>
+</div>
+
+<section class="section" id="about">
+<div class="container split">
+    <img
+    src="https://images.unsplash.com/photo-1579154341098-e4e158cc7f55?auto=format&fit=crop&w=900&q=85"
+    alt="Healthcare professionals">
+
+    <div>
+        <span class="eyebrow">ABOUT BLOOD DONATION</span>
+        <h2>A little kindness can mean everything.</h2>
+        <p>Blood donation helps hospitals provide care to patients
+        during emergencies, operations, and medical treatments.
+        Voluntary donors play an important role in keeping blood supplies available.</p>
+        <ul>
+            <li>Support people who need blood.</li>
+            <li>Encourage voluntary blood donation.</li>
+            <li>Build a caring and informed community.</li>
+        </ul>
+        <a href="insert.html" class="btn">Become a Donor ❤️</a>
+    </div>
+</div>
+</section>
+
+<section class="section section-white">
+<div class="container">
+    <div class="section-title">
+        <span class="eyebrow">WHY DONATE BLOOD?</span>
+        <h2>Be someone's reason to smile</h2>
+        <p>A simple act of generosity can make a meaningful difference.</p>
+    </div>
+
+    <div class="features">
+        <article class="feature-card">
+            <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=700&q=80" alt="Blood donation">
+            <div><h3>Support Patients ❤️</h3>
+            <p>Donated blood helps support patients who need transfusions.</p></div>
+        </article>
+
+        <article class="feature-card">
+            <img src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=700&q=80" alt="Healthcare team">
+            <div><h3>Build Community 🤝</h3>
+            <p>Encourage people to take part in voluntary blood donation.</p></div>
+        </article>
+
+        <article class="feature-card">
+            <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=700&q=80" alt="Medical care">
+            <div><h3>Spread Awareness 🌷</h3>
+            <p>Help others learn about safe donation and donor eligibility.</p></div>
+        </article>
+    </div>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+    <div class="section-title">
+        <span class="eyebrow">DID YOU KNOW?</span>
+        <h2>Blood donation awareness</h2>
+    </div>
+    <div class="facts">
+        <div class="fact">
+            <h3>Check eligibility</h3>
+            <p>Eligibility depends on health and local blood donation guidelines.</p>
+        </div>
+        <div class="fact">
+            <h3>Donate safely</h3>
+            <p>Always donate through an authorised blood bank or donation centre.</p>
+        </div>
+        <div class="fact">
+            <h3>Stay informed</h3>
+            <p>Follow healthcare professionals' guidance before and after donation.</p>
+        </div>
+    </div>
+</div>
+</section>
+
+<footer class="footer" id="contact">
+<div class="container footer-inner">
+    <div>
+        <strong>🩸 Blood Donor Management System</strong>
+        <p>Donate Blood, Save Lives ❤️</p>
+    </div>
+    <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="insert.html">Register</a>
+        <a href="list.html">View Donors</a>
+        <a href="listOne.html">Find Donor</a>
+    </div>
+    <p>For blood donation assistance, contact an authorised local blood bank.</p>
+</div>
+</footer>
+
+<script>
+fetch("/api/donors/count")
+.then(response => {
+    if (!response.ok) throw new Error("Count unavailable");
+    return response.json();
+})
+.then(data => {
+    document.getElementById("donorCount").textContent = data.total;
+})
+.catch(() => {
+    document.getElementById("donorCount").textContent = "Unavailable";
+});
+</script>
+
+</body>
+</html>

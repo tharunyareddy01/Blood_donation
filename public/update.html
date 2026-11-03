@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Donor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+<div class="container nav-inner">
+<a class="brand" href="index.html">
+<span class="logo">♥</span>
+<span>Tharunya Blood Care</span>
+<small>DONATE BLOOD, SAVE LIVES ❤️</small></span>
+</a>
+<nav class="nav-links">
+<a href="index.html">Home</a>
+<a href="index.html#about">About</a>
+<a href="insert.html">Register Donor</a>
+<a href="list.html">View Donors</a>
+<a href="index.html#contact">Contact</a>
+</nav>
+</div>
+</header>
+
+<section class="page-header">
+<div class="container">
+<h1>Update Donor Details</h1>
+<p>Keep donor information up to date.</p>
+</div>
+</section>
+
+<main class="page-content">
+<div class="container">
+<div class="panel panel-narrow">
+<span class="eyebrow">EDIT DONOR INFORMATION</span>
+
+<form id="findForm">
+<div class="field">
+<label for="lookup_id">Enter Donor ID</label>
+<input id="lookup_id" type="number" min="1"
+required placeholder="Donor ID">
+</div>
+<button type="submit" class="btn btn-light">Find Donor</button>
+</form>
+
+<div id="message" class="message" role="status"></div>
+
+<form id="updateForm" hidden>
+
+<div class="field">
+<label for="donor_id">Donor ID (unchangeable)</label>
+<input id="donor_id" readonly>
+</div>
+
+<div class="field">
+<label for="donor_name">Donor Name *</label>
+<input id="donor_name" maxlength="100" required>
+</div>
+
+<div class="field">
+<label for="phone_number">Phone Number *</label>
+<input id="phone_number" type="tel" maxlength="15"
+pattern="[0-9+() -]{7,15}" required>
+</div>
+
+<!-- NEW FIELD: AGE -->
+<div class="field">
+<label for="age">Age *</label>
+<input id="age" type="number" min="18" max="100"
+placeholder="Enter age" required>
+</div>
+
+<!-- NEW FIELD: BLOOD GROUP -->
+<div class="field">
+<label for="blood_group">Blood Group *</label>
+<select id="blood_group" required>
+<option value="">Select blood group</option>
+<option value="A+">A+</option>
+<option value="A-">A-</option>
+<option value="B+">B+</option>
+<option value="B-">B-</option>
+<option value="O+">O+</option>
+<option value="O-">O-</option>
+<option value="AB+">AB+</option>
+<option value="AB-">AB-</option>
+</select>
+</div>
+
+<!-- NEW FIELD: GENDER -->
+<div class="field">
+<label for="gender">Gender *</label>
+<select id="gender" required>
+<option value="">Select gender</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
+<option value="Prefer not to say">Prefer not to say</option>
+</select>
+</div>
+
+<div class="form-actions">
+<button type="submit" class="btn">Update Donor</button>
+<a href="list.html" class="btn btn-light">Cancel</a>
+</div>
+
+</form>
+</div>
+</div>
+</main>
+
+<footer class="footer">
+<div class="container">
+<strong>Blood Donor Management System ❤️</strong>
+<p>Donate Blood, Save Lives.</p>
+</div>
+</footer>
+
+<script>
+const findForm = document.getElementById("findForm");
+const updateForm = document.getElementById("updateForm");
+const message = document.getElementById("message");
+
+function showMessage(text, type) {
+    message.textContent = text;
+    message.className = "message show " + type;
+}
+
+async function findDonor(id) {
+    updateForm.hidden = true;
+    message.className = "message";
+
+    try {
+        const response = await fetch(
+            "/api/donors/" + encodeURIComponent(id)
+        );
+
+        const donor = await response.json();
+
+        if (!response.ok) {
+            throw new Error(donor.error || "Donor not found.");
+        }
+
+        document.getElementById("lookup_id").value = donor.donor_id;
+        document.getElementById("donor_id").value = donor.donor_id;
+        document.getElementById("donor_name").value = donor.donor_name;
+        document.getElementById("phone_number").value = donor.phone_number;
+        document.getElementById("age").value = donor.age ?? "";
+        document.getElementById("blood_group").value = donor.blood_group ?? "";
+        document.getElementById("gender").value = donor.gender ?? "";
+
+        updateForm.hidden = false;
+
+        showMessage(
+            "Donor details loaded. You can edit the information.",
+            "success"
+        );
+
+    } catch (error) {
+        showMessage(error.message || "Unable to connect to the server.", "error");
+    }
+}
+
+findForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    findDonor(
+        document.getElementById("lookup_id").value.trim()
+    );
+});
+
+updateForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const id = document.getElementById("donor_id").value;
+    const donor_name = document.getElementById("donor_name").value.trim();
+    const phone_number = document.getElementById("phone_number").value.trim();
+    const age = Number(document.getElementById("age").value);
+    const blood_group = document.getElementById("blood_group").value;
+    const gender = document.getElementById("gender").value;
+
+    if (
+        !donor_name ||
+        !phone_number ||
+        !Number.isInteger(age) ||
+        age < 18 ||
+        age > 100 ||
+        !blood_group ||
+        !gender
+    ) {
+        showMessage("Please enter valid details in all required fields.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/donors/" + encodeURIComponent(id),
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    donor_name,
+                    phone_number,
+                    age,
+                    blood_group,
+                    gender
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Update failed.");
+        }
+
+        showMessage(
+            data.message || "Donor details updated successfully!",
+            "success"
+        );
+
+    } catch (error) {
+        showMessage(
+            error.message || "Unable to connect to the server.",
+            "error"
+        );
+    }
+});
+
+const id = new URLSearchParams(location.search).get("id");
+
+if (id && /^[1-9]\d*$/.test(id)) {
+    document.getElementById("lookup_id").value = id;
+    findDonor(id);
+}
+</script>
+
+</body>
+</html>

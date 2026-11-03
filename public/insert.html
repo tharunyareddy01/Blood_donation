@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Donor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+    <div class="container nav-inner">
+        <a class="brand" href="index.html">
+            <span class="logo">♥</span>
+            <span>
+                Tharunya Blood Care
+                <small>DONATE BLOOD, SAVE LIVES ❤️</small>
+            </span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#about">About</a>
+            <a href="insert.html">Register Donor</a>
+            <a href="list.html">View Donors</a>
+            <a href="index.html#contact">Contact</a>
+        </nav>
+    </div>
+</header>
+
+<section class="page-header">
+    <div class="container">
+        <h1>Register as a Donor 🩸</h1>
+        <p>Join our community and help make a difference.</p>
+    </div>
+</section>
+
+<main class="page-content">
+    <div class="container">
+        <div class="panel panel-narrow">
+
+            <span class="eyebrow">DONOR REGISTRATION</span>
+            <h2>Donor Information</h2>
+            <p>Fields marked * are required.</p>
+
+            <div id="message" class="message" role="status"></div>
+
+            <form id="donorForm">
+
+                <!-- MANUAL DONOR ID -->
+                <div class="field">
+                    <label for="donor_id">Donor ID *</label>
+                    <input
+                        id="donor_id"
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="Enter Donor ID"
+                        required
+                    >
+                </div>
+
+                <!-- DONOR NAME -->
+                <div class="field">
+                    <label for="donor_name">Donor Name *</label>
+                    <input
+                        id="donor_name"
+                        type="text"
+                        maxlength="100"
+                        placeholder="Enter full name"
+                        required
+                    >
+                </div>
+
+                <!-- PHONE NUMBER -->
+                <div class="field">
+                    <label for="phone_number">Phone Number *</label>
+                    <input
+                        id="phone_number"
+                        type="tel"
+                        maxlength="15"
+                        pattern="[0-9+() -]{7,15}"
+                        placeholder="Enter phone number"
+                        required
+                    >
+                    <small class="helper">
+                        Enter 7–15 characters using digits and optional +, spaces, brackets or hyphens.
+                    </small>
+                </div>
+
+                <!-- AGE -->
+                <div class="field">
+                    <label for="age">Age *</label>
+                    <input
+                        id="age"
+                        type="number"
+                        min="18"
+                        max="100"
+                        step="1"
+                        placeholder="Enter your age"
+                        required
+                    >
+                    <small class="helper">
+                        Donors must meet applicable blood donation eligibility requirements.
+                    </small>
+                </div>
+
+                <!-- BLOOD GROUP -->
+                <div class="field">
+                    <label for="blood_group">Blood Group *</label>
+                    <select id="blood_group" required>
+                        <option value="">Select blood group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                </div>
+
+                <!-- GENDER -->
+                <div class="field">
+                    <label for="gender">Gender *</label>
+                    <select id="gender" required>
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">
+                            Prefer not to say
+                        </option>
+                    </select>
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="form-actions">
+                    <button type="submit" class="btn">
+                        ♥ Register Donor
+                    </button>
+
+                    <button type="reset" class="btn btn-light">
+                        Clear Form
+                    </button>
+
+                    <a href="list.html" class="btn btn-soft">
+                        View Donors
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <strong>Blood Donor Management System ❤️</strong>
+        <p>Donate Blood, Save Lives.</p>
+    </div>
+</footer>
+
+<script>
+const form = document.getElementById("donorForm");
+const message = document.getElementById("message");
+
+function showMessage(text, type) {
+    message.textContent = text;
+    message.className = "message show " + type;
+}
+
+form.addEventListener("reset", () => {
+    message.className = "message";
+});
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const donor_id = Number(
+        document.getElementById("donor_id").value
+    );
+
+    const donor_name = document
+        .getElementById("donor_name")
+        .value.trim();
+
+    const phone_number = document
+        .getElementById("phone_number")
+        .value.trim();
+
+    const age = Number(
+        document.getElementById("age").value
+    );
+
+    const blood_group = document
+        .getElementById("blood_group").value;
+
+    const gender = document
+        .getElementById("gender").value;
+
+    // VALIDATION
+    if (
+        !Number.isSafeInteger(donor_id) ||
+        donor_id <= 0 ||
+        !donor_name ||
+        !/^[0-9+() -]{7,15}$/.test(phone_number) ||
+        !Number.isInteger(age) ||
+        age < 18 ||
+        age > 100 ||
+        !blood_group ||
+        !gender
+    ) {
+        showMessage(
+            "Please fill in all fields with valid details.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/donors", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                donor_id,
+                donor_name,
+                phone_number,
+                age,
+                blood_group,
+                gender
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Donor registration failed."
+            );
+        }
+
+        showMessage(
+            "Donor registered successfully! Donor ID: " +
+            donor_id,
+            "success"
+        );
+
+        form.reset();
+
+    } catch (error) {
+        showMessage(
+            error.message ||
+            "Unable to connect to the server. Please try again.",
+            "error"
+        );
+    }
+});
+</script>
+
+</body>
+</html>

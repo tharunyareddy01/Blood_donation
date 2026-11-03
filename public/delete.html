@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete Donor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+<div class="container nav-inner">
+<a class="brand" href="index.html">
+<span class="logo">♥</span>
+<span>Tharunya Blood Care
+<small>DONATE BLOOD, SAVE LIVES ❤️</small></span>
+</a>
+<nav class="nav-links">
+<a href="index.html">Home</a>
+<a href="index.html#about">About</a>
+<a href="insert.html">Register Donor</a>
+<a href="list.html">View Donors</a>
+<a href="index.html#contact">Contact</a>
+</nav>
+</div>
+</header>
+
+<section class="page-header">
+<div class="container">
+<h1>Delete Donor Record 🩸</h1>
+<p>Verify the details carefully before deleting a record.</p>
+</div>
+</section>
+
+<main class="page-content">
+<div class="container">
+<div class="panel panel-narrow">
+<span class="eyebrow">MANAGE DONOR RECORDS</span>
+<h2>Find Donor</h2>
+
+<form id="findForm">
+<div class="field">
+<label for="lookup_id">Donor ID *</label>
+<input id="lookup_id" type="number" min="1"
+required placeholder="Enter Donor ID">
+</div>
+
+<div class="form-actions">
+<button class="btn btn-light" type="submit">Find Donor</button>
+<a class="btn btn-soft" href="list.html">Back to Donors</a>
+</div>
+</form>
+
+<div id="message" class="message" role="status"></div>
+<div id="result" hidden></div>
+</div>
+</div>
+</main>
+
+<footer class="footer">
+<div class="container">
+<strong>Blood Donor Management System ❤️</strong>
+<p>Donate Blood, Save Lives.</p>
+</div>
+</footer>
+
+<script>
+const findForm = document.getElementById("findForm");
+const message = document.getElementById("message");
+const result = document.getElementById("result");
+
+let currentDonor = null;
+
+function showMessage(text, type) {
+    message.textContent = text;
+    message.className = "message show " + type;
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+async function findDonor(id) {
+    currentDonor = null;
+    result.hidden = true;
+    result.innerHTML = "";
+    message.className = "message";
+
+    try {
+        const response = await fetch(
+            "/api/donors/" + encodeURIComponent(id)
+        );
+
+        const donor = await response.json();
+
+        if (!response.ok) {
+            throw new Error(donor.error || "Donor not found.");
+        }
+
+        currentDonor = donor;
+        result.hidden = false;
+
+        result.innerHTML = `
+            <h2>Donor Details</h2>
+
+            <div class="details">
+                <div class="detail">
+                    <span>Donor ID</span>
+                    <strong>#${escapeHTML(donor.donor_id)}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Donor Name</span>
+                    <strong>${escapeHTML(donor.donor_name)}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Phone Number</span>
+                    <strong>${escapeHTML(donor.phone_number)}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Age</span>
+                    <strong>${escapeHTML(donor.age ?? "Not available")}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Blood Group</span>
+                    <strong>${escapeHTML(donor.blood_group ?? "Not available")}</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Gender</span>
+                    <strong>${escapeHTML(donor.gender ?? "Not available")}</strong>
+                </div>
+            </div>
+
+            <p>
+                <strong>
+                    Are you sure you want to permanently delete this record?
+                </strong>
+            </p>
+
+            <div class="form-actions">
+                <button id="confirmDelete"
+                        class="btn btn-danger"
+                        type="button">
+                    Delete Donor
+                </button>
+            </div>
+        `;
+
+        showMessage(
+            "Donor found. Review the details before deleting.",
+            "success"
+        );
+
+        document.getElementById("confirmDelete")
+            .addEventListener("click", deleteDonor);
+
+    } catch (error) {
+        showMessage(error.message || "Unable to connect to the server.", "error");
+    }
+}
+
+async function deleteDonor() {
+    if (!currentDonor) return;
+
+    const confirmed = window.confirm(
+        "Delete donor #" + currentDonor.donor_id +
+        "? This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch(
+            "/api/donors/" +
+            encodeURIComponent(currentDonor.donor_id),
+            { method: "DELETE" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Deletion failed.");
+        }
+
+        currentDonor = null;
+        result.hidden = true;
+        result.innerHTML = "";
+
+        document.getElementById("lookup_id").value = "";
+
+        showMessage(
+            data.message || "Donor deleted successfully.",
+            "success"
+        );
+
+    } catch (error) {
+        showMessage(
+            error.message || "Unable to connect to the server.",
+            "error"
+        );
+    }
+}
+
+findForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const id = document.getElementById("lookup_id").value.trim();
+
+    if (id) {
+        findDonor(id);
+    }
+});
+
+const id = new URLSearchParams(window.location.search).get("id");
+
+if (id && /^[1-9]\d*$/.test(id)) {
+    document.getElementById("lookup_id").value = id;
+    findDonor(id);
+}
+</script>
+
+</body>
+</html>
